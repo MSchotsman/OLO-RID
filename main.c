@@ -35,16 +35,16 @@ int main(int argc, char **argv)
   clock_t end;
 
   location uav_loc;
-  pke_S TTP_S;
-  pke_W TTP;
+  pke_S USS_S;
+  pke_W USS;
   time_t time_mark;
   remote message;
-  message.id[0] =  0x79;
-  message.id[1] =  0x7a;
-  message.id[2] =  0x61;
-  message.id[3] =  0x62;
+  message.id[0] =  0x52;
+  message.id[1] =  0x55;
+  message.id[2] =  0x41;
+  message.id[3] =  0x56;
   setup_cs_loc(&message.gcs);
-  get_ttp(&TTP, &TTP_S);
+  get_ttp(&USS, &USS_S);
 
   double p_pos[27];
   init_p_pos(p_pos);
@@ -70,12 +70,18 @@ int main(int argc, char **argv)
         message.time[k] = ((time_hex[j] % 32 + 9) % 25 * 16 + (time_hex[j+1] % 32 + 9) % 25);
     }
 
+    get_velocity(&message.vel);
     message.em_status = get_em_status();
     main_correlatedRelease(uav_loc, &message.obf_loc, Locations_orig, p_pos);
     
-    encrypt_loc(&message.cipher_out, TTP, uav_loc, TTP_S);  
+    encrypt_loc(&message.cipher_out, USS, uav_loc, USS_S);  
     
     correlatedRelease_terminate();
+
+    /*
+      The complete Remote ID message is stored in the `message` variable
+      To show the obfuscation method working, we print the obfuscated location in longitude/latitude/altitude
+    */
     printf("%f\t%f\t%f\n", message.obf_loc.longitude.a, message.obf_loc.latitude.a, message.obf_loc.altitude.a);
   }
   return 0;
@@ -116,8 +122,10 @@ void main_correlatedRelease(location uav_loc, location *obf_loc, double *Locatio
   obf_loc->altitude.a = z[2].re;
 }
 
-// The TTP secret should later be removed, for now it is there for testing purposes
-void encrypt_loc(cipher *cipher_out, pke_W TTP, location uav_loc, pke_S TTP_S) {
+/*
+  FW: The USS secret should be removed, for now it is there for showcasing purposes
+*/
+void encrypt_loc(cipher *cipher_out, pke_W USS, location uav_loc, pke_S USS_S) {
   // Hashtype
   int h = HASH_TYPE_NIST521;
   // Encoding parameters
@@ -148,11 +156,14 @@ void encrypt_loc(cipher *cipher_out, pke_W TTP, location uav_loc, pke_S TTP_S) {
   cipher_out->T.len = 0;
   cipher_out->T.max = sizeof(cipher_out->t);
   cipher_out->T.val = cipher_out->t;
-  ECP_NIST521_ECIES_ENCRYPT(h, &P1, &P2, &R, &TTP.W, &M, len, &cipher_out->V, &cipher_out->C, &cipher_out->T);
-  // Test whether the program correctly encrypts/decrypts, should later be removed.
-  char new_m[30];
-  octet NEW_M = {30, sizeof(new_m), new_m};
-  int out = ECP_NIST521_ECIES_DECRYPT(h, &P1, &P2, &cipher_out->V, &cipher_out->C, &cipher_out->T, &TTP_S.S, &NEW_M);
+  ECP_NIST521_ECIES_ENCRYPT(h, &P1, &P2, &R, &USS.W, &M, len, &cipher_out->V, &cipher_out->C, &cipher_out->T);
+  
+  /*
+    FW: Uncomment the lower part to see the ECIES Decryption working
+  */
+  // char new_m[30];
+  // octet NEW_M = {30, sizeof(new_m), new_m};
+  // int out = ECP_NIST521_ECIES_DECRYPT(h, &P1, &P2, &cipher_out->V, &cipher_out->C, &cipher_out->T, &USS_S.S, &NEW_M);
   // printf("M the output plaintext message\n");
   // printf("%s\n", NEW_M.val);
 }
@@ -182,21 +193,33 @@ unsigned char get_em_status(void) {
   return 0;
 }
 
-void get_ttp(pke_W *TTP, pke_S *TTP_S) {
+/*
+  FW: Get the velocity data from the GNSS
+*/
+void get_velocity(location *velocity) {
+  velocity->latitude.a = 0.0;
+  velocity->longitude.a = 0.0;
+  velocity->altitude.a = 0.0;
+}
+
+/*
+  FW: Instead of generating a keypair, input the public key of the USS
+*/
+void get_ttp(pke_W *USS, pke_S *USS_S) {
   // Setup rng
   csprng R;
   char raw[100];
   octet RAW = {100, sizeof(raw), raw};
   CREATE_CSPRNG(&R,  &RAW);
   // Setup the secret and public structures
-  TTP_S->S.len = 0;
-  TTP_S->S.max = sizeof(TTP_S->s);
-  TTP_S->S.val = TTP_S->s;
-  TTP->W.len = 0;
-  TTP->W.max = sizeof(TTP->w);
-  TTP->W.val = TTP->w;
+  USS_S->S.len = 0;
+  USS_S->S.max = sizeof(USS_S->s);
+  USS_S->S.val = USS_S->s;
+  USS->W.len = 0;
+  USS->W.max = sizeof(USS->w);
+  USS->W.val = USS->w;
   // Generate Keypair
-  ECP_NIST521_KEY_PAIR_GENERATE(&R, &TTP_S->S, &TTP->W);
+  ECP_NIST521_KEY_PAIR_GENERATE(&R, &USS_S->S, &USS->W);
 }
 
 /*

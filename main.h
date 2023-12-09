@@ -25,6 +25,10 @@ extern "C" {
 
 #define MAXCHAR 1000
 
+/*
+  FILE_PATH variable stores the location trace csv file (including headers: latitude, longitude, altitude)
+  FILE_LEN Are the amount of rows in the file located at FILE_PATH
+*/
 // #define FILE_PATH "./include/Traces/scenario_1_1.csv"
 // #define FILE_LEN 7979
 // #define FILE_PATH "./include/Traces/scenario_1_2.csv"
@@ -80,8 +84,9 @@ typedef struct {
 */
 typedef struct {
   char id[4];
-  location gcs;
   location obf_loc;
+  location vel;
+  location gcs;
   unsigned char time[4];
   unsigned char em_status;
   cipher cipher_out;
@@ -99,6 +104,8 @@ extern void setup_uav_loc(location *loc, int i, double* trace_locations);
 extern void setup_cs_loc(location *loc);
 
 extern unsigned char get_em_status(void);
+
+extern void get_velocity(location *velocity);
 
 extern void get_ttp(pke_W *TTP, pke_S *TTP_S);
 
