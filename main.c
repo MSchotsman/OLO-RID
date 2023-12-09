@@ -17,13 +17,14 @@
 #include "./include/PIM/correlatedRelease_emxAPI.h"
 #include "./include/PIM/correlatedRelease_terminate.h"
 #include "./include/MiraclCore/core.h"
+// Change the curve below and in ./main.h if neccessary
 #include "./include/MiraclCore/ecdh_NIST521.h"
 #include "./include/MiraclCore/randapi.h"
 #include "./include/PIM/rand.h"
 #include <string.h>
 #include <stdio.h>
 #include <time.h>
-#include<stdbool.h>
+#include <stdbool.h>
 #include <stdlib.h>
 
 int main(int argc, char **argv)
@@ -54,7 +55,6 @@ int main(int argc, char **argv)
   read_csv(trace_locations);
 
   int steps = FILE_LEN;
-  int debug = 0;
 
   if (!isInitialized_correlatedRelease) {
     correlatedRelease_initialize();
@@ -71,26 +71,12 @@ int main(int argc, char **argv)
     }
 
     message.em_status = get_em_status();
-    if (debug) {
-      printf("Locations orig\n");
-      for (int j = 0; j < 27; j++) {
-        for (int k = j; k < 81; k += 27) {
-          printf("%f, ", Locations_orig[k]);
-        }
-        printf("\n");
-      }
-      printf("P pos\n");
-      for (int j = 0; j < 27; j++) {
-        printf("%f, ", p_pos[j]);      
-      }
-      printf("\n");
-    }
-    main_correlatedRelease(uav_loc, &message.obf_loc, Locations_orig, p_pos, debug);
+    main_correlatedRelease(uav_loc, &message.obf_loc, Locations_orig, p_pos);
     
     encrypt_loc(&message.cipher_out, TTP, uav_loc, TTP_S);  
     
     correlatedRelease_terminate();
-    printf("%f\t%f\t%f\t%f\n", message.obf_loc.longitude.a, message.obf_loc.latitude.a, message.obf_loc.altitude.a);
+    printf("%f\t%f\t%f\n", message.obf_loc.longitude.a, message.obf_loc.latitude.a, message.obf_loc.altitude.a);
   }
   return 0;
 }
@@ -102,7 +88,7 @@ int main(int argc, char **argv)
 	@param Locations_orig pointer to a location array
   @param p_pos pointer to the probability for each position array
  */
-void main_correlatedRelease(location uav_loc, location *obf_loc, double *Locations_orig, double *p_pos, int debug)
+void main_correlatedRelease(location uav_loc, location *obf_loc, double *Locations_orig, double *p_pos)
 {
   // Initialize the standard values
   double epsilon = 0.1;
@@ -120,7 +106,7 @@ void main_correlatedRelease(location uav_loc, location *obf_loc, double *Locatio
   emxInitArray_real_T(&p_pos_res, 1);
   correlatedRelease(epsilon, delta, M, p_pos, P_true_all, drone_speed,
                     shift_lat_long, old_locations_data, old_locations_size,
-                    number_of_blocks_per_dim, p_pos_res, z, Locations_orig, debug);
+                    number_of_blocks_per_dim, p_pos_res, z, Locations_orig);
   for (int i =0 ; i < 27; i++) {
     p_pos[i] = p_pos_res->data[i];
   }
@@ -171,20 +157,27 @@ void encrypt_loc(cipher *cipher_out, pke_W TTP, location uav_loc, pke_S TTP_S) {
   // printf("%s\n", NEW_M.val);
 }
 
-// Should have a call to the gps
+/*
+  FW: Create a call to the GNSS Module
+*/
 void setup_uav_loc(location *loc, int i, double* trace_locations) {
   loc->longitude.a = trace_locations[i*3];
   loc->latitude.a = trace_locations[i*3+1];
   loc->altitude.a = trace_locations[i*3+2];
 }
 
-// This function can just call the uav_loc
+/*
+  FW: Use UAV starting location, or the CS location
+*/
 void setup_cs_loc(location *loc) {
   loc->longitude.a = 1.0;
   loc->latitude.a = 1.0;
   loc->altitude.a = 1.0;
 }
 
+/*
+  FW: Get the emergency status
+*/
 unsigned char get_em_status(void) {
   return 0;
 }
@@ -206,26 +199,18 @@ void get_ttp(pke_W *TTP, pke_S *TTP_S) {
   ECP_NIST521_KEY_PAIR_GENERATE(&R, &TTP_S->S, &TTP->W);
 }
 
+/*
+  Initialize the posterior probabilities
+*/
 void init_p_pos(double *p_pos) {
   for (int i = 0; i < 27; i++) {
     p_pos[i] = 1.0/27.0;
   }
 }
 
-
-void print_hex(const char *string)
-{
-        unsigned char *p = (unsigned char *) string;
-
-        for (int i=0; i < strlen(string); ++i) {
-                if (! (i % 16) && i)
-                        printf("\n");
-
-                printf("%02x ", p[i]);
-        }
-        printf("\n\n");
-}
-
+/*
+  FW: When GNSS Module is added, remove this functionality
+*/
 double* read_csv(double *csv) {
     FILE *fp;
     char row[MAXCHAR];

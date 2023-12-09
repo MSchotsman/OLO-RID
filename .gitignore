@@ -1,3 +1,4 @@
 *.exe
 /include/MiraclCore/*
 /include/Traces/*
+.vscode/

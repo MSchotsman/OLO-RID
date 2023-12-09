@@ -30,7 +30,7 @@ extern void correlatedRelease(double epsilon, double delta, double M,
                               const int old_locations_size[2],
                               double number_of_blocks_per_dim,
                               emxArray_real_T *p_pos_res, creal_T z[3],
-                              double Locations_orig[81], int debug);
+                              double Locations_orig[81]);
 
 creal_T real_min(const emxArray_creal_T *x);
 

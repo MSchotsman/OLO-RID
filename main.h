@@ -13,11 +13,8 @@
 #define MAIN_H
 
 /* Include files */
-// #include "./include/MiraclCore/ecdh_BN254.h"
-// #include "./include/MiraclCore/ecdh_NIST256.h"
-// #include "./include/MiraclCore/ecdh_NIST384.h"
+// Change the curve below and in ./main.c if neccessary
 #include "./include/MiraclCore/ecdh_NIST521.h"
-// #include "./include/MiraclCore/ecdh_BLS48556.h"
 #include "./include/MiraclCore/core.h"
 #include <stddef.h>
 #include <stdlib.h>
@@ -93,7 +90,7 @@ typedef struct {
 /* Function Declarations */
 extern int main(int argc, char **argv);
 
-extern void main_correlatedRelease(location uav_loc, location *obf_loc, double *Locations_orig, double *p_pos, int debug);
+extern void main_correlatedRelease(location uav_loc, location *obf_loc, double *Locations_orig, double *p_pos);
 
 extern void encrypt_loc(cipher *cipher_out, pke_W TTP, location uav_loc, pke_S TTP_S);
 
@@ -106,8 +103,6 @@ extern unsigned char get_em_status(void);
 extern void get_ttp(pke_W *TTP, pke_S *TTP_S);
 
 extern void init_p_pos(double *p_pos);
-
-extern void print_hex(const char *string);
 
 extern double* read_csv(double *csv);
 

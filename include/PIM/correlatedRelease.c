@@ -121,7 +121,7 @@ void correlatedRelease(double epsilon, double delta, double M,
                        const int old_locations_size[2],
                        double number_of_blocks_per_dim,
                        emxArray_real_T *p_pos_res, creal_T z[3],
-                       double Locations_orig[81], int debug)
+                       double Locations_orig[81])
 {
   static const signed char permutation[81] = {
       0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  1,  1,  1, 1, 1,  1, 1,
@@ -240,15 +240,6 @@ void correlatedRelease(double epsilon, double delta, double M,
           x[i] + (double)permutation[xpageoffset] * matSums[i];
     }
   }
-  if (debug) {
-    printf("Locations orig 289\n");
-    for (int j = 0; j < 27; j++) {
-      for (int k = j; k < 81; k += 27) {
-        printf("%f\t", Locations_orig[k]);
-      }
-      printf("\n");
-    }
-  }
   i = p_pos_res->size[0];
   p_pos_res->size[0] = 27;
   emxEnsureCapacity_real_T(p_pos_res, i);
@@ -287,15 +278,6 @@ void correlatedRelease(double epsilon, double delta, double M,
       p_pos_res_data[i] = 1.0 / sumP;
     }
     loop_ub = old_locations_size[1];
-    if (debug) {
-    printf("Old locations data 342\n");
-      for (int j = 0; j < 27; j++) {
-        for (int k = j; k < 81; k += 27) {
-          printf("%f\t", old_locations_data[k]);
-        }
-        printf("\n");
-      }
-    }
     for (xpageoffset = 0; xpageoffset < 27; xpageoffset++) {
       for (hi = 0; hi < 27; hi++) {
         // if (old_locations_size[1] == 3) {
@@ -311,16 +293,10 @@ void correlatedRelease(double epsilon, double delta, double M,
         for (int cnt = 0; cnt < 3; cnt++) {
           res_part[cnt] = old_locations_data[xpageoffset + 27*cnt] - Locations_orig[hi + 27*cnt];
         }
-        if (debug) {
-          // printf("Sum diff: %.30f, %i, %i\n", (fabs(res_part[0]) + fabs(res_part[1])) + fabs(res_part[2]), xpageoffset, hi);
-        }
         // if ((fabs(res_part[0]) + fabs(res_part[1])) + fabs(res_part[2]) <=
         //     1.0E-6) {
         if ((fabs(res_part[0]) + fabs(res_part[1])) + fabs(res_part[2]) <=
             0.00000095367431640624) {
-          if (debug) {
-            printf("Trigger at: %i, %i\n", xpageoffset, hi);
-          }
           p_pos_res_data[hi] = p_pos[xpageoffset];
         }
         // Check for iteration 103, should be removed later TODO
@@ -330,14 +306,6 @@ void correlatedRelease(double epsilon, double delta, double M,
         //   p_pos_res_data[hi] = p_pos[xpageoffset];
         // }
       }
-    }
-    if (debug) {
-      printf("p_pos_res: \n");
-      for (int i = 0; i < 27; i++) {
-        printf("%f, ", p_pos_res_data[i]);
-      }
-      printf("\n");
-      printf("M: %f\n", M);
     }
     /* p_pos = p_pos;%./sum(p_pos); */
     xpageoffset = p_pos_res->size[0] - 1;
@@ -354,18 +322,7 @@ void correlatedRelease(double epsilon, double delta, double M,
         p_prior_data[b_i] += M * p_pos_res_data[loop_ub];
       }
     }
-    if (debug) {
-      printf("values: %i, %i\n", xpageoffset, hi);
-    }
     /*  compute prior probability */
-  }
-  if (debug) {
-    printf("p_prior\n");
-    for (int i = 0; i < 27; i++) {
-      // p_prior_data[i] = 1.0/27.0;
-      printf("%f,", p_prior_data[i]);
-    }
-    printf("\n");
   }
   
   /*  difference in value scaling lat and alt */
@@ -453,15 +410,6 @@ void correlatedRelease(double epsilon, double delta, double M,
   K_prime->size[1] = 3;
   emxEnsureCapacity_real_T(K_prime, i);
   K_prime_data = K_prime->data;
-  if (debug) {
-    printf("Locations\n");
-    for (int j = 0; j < 27; j++) {
-      for (int k = j; k < 81; k += 27) {
-        printf("%f, ", Locations[k]);
-      }
-      printf("\n");
-    }
-  }
 
   /*  check if the true location is in Delta_x */
   emxInit_boolean_T(&b_Locations);
@@ -688,9 +636,6 @@ void correlatedRelease(double epsilon, double delta, double M,
   sumP = b_rand();
   b_r = b_rand();
   T_re_tmp = b_rand();
-  if (debug) {
-    printf("Random values: %f, %f, %f\n", sumP, b_r, T_re_tmp);
-  }
   res_part[0] = c_minimum(idx) + (b_maximum(c_idx) - c_minimum(d_idx)) * sumP;
   res_part[1] = c_minimum(e_idx) + (b_maximum(f_idx) - c_minimum(g_idx)) * b_r;
   res_part[2] =
@@ -735,10 +680,6 @@ void correlatedRelease(double epsilon, double delta, double M,
   new_y_vals_data[2] = res_part[2];
   /* disp(new_y_vals); */
   sumP = 3.0 * (double)(K_prime->size[0] * 3);
-  if (debug) {
-    printf("K_prime size 0: %i\n", K_prime->size[0]);
-    printf("sumP values: %f\n", sumP);
-  }
   xpageoffset = 0;
   exitg1 = false;
   int iterations = 0;
@@ -850,9 +791,6 @@ void correlatedRelease(double epsilon, double delta, double M,
       xpageoffset++;
     }
   }
-  if (debug) {
-    printf("Iterations: %i\n", iterations);
-  }
 
   emxFree_real_T(&j_idx);
   emxFree_real_T(&i_idx);
@@ -922,9 +860,6 @@ void correlatedRelease(double epsilon, double delta, double M,
   sumP = b_rand();
   T_re_tmp = b_rand();
   e_T_re_tmp = b_rand();
-  if (debug) {
-    printf("randoms %f, %f, %f\n", sumP, T_re_tmp, e_T_re_tmp);
-  }
   /* z = [min(K_I(1,:)) + (max(K_I(1,:))+min(K_I(1,:)))*0.5;... */
   /*     min(K_I(2,:)) + (max(K_I(2,:))+min(K_I(2,:)))*0.5;... */
   /*     min(K_I(3,:)) + (max(K_I(3,:))+min(K_I(3,:)))*0.5]; */
