@@ -222,10 +222,6 @@ void correlatedRelease(double epsilon, double delta, double M,
   boolean_T p;
   boolean_T *Locations_data;
 
-  // matSums = permutation.*[shift_lat_long,shift_lat_long,drone_speed];
-  // Locations_orig = x + matSums;
-
-  // Added code
   for (int i = 0; i < 81; i++) {
     old_locations_data[i] = Locations_orig[i];
   }
@@ -249,12 +245,7 @@ void correlatedRelease(double epsilon, double delta, double M,
   }
   emxInit_real_T(&p_prior, 1);
 
-  
-
-
-  // if isempty(old_locations)
   if ((old_locations_size[0] == 0) || (old_locations_size[1] == 0)) {
-    // p_prior = M.*ones(size(p_pos,1))*p_pos;
     i = p_prior->size[0];
     p_prior->size[0] = 27;
     emxEnsureCapacity_real_T(p_prior, i);
@@ -267,7 +258,6 @@ void correlatedRelease(double epsilon, double delta, double M,
       p_prior_data[i] = sumP;
     }
   } else {
-    /* [C,ia,ib] = intersect(old_locations,Locations_orig); */
     sumP = rt_powd_snf(number_of_blocks_per_dim, 3.0);
     loop_ub_tmp = (int)sumP;
     i = p_pos_res->size[0];
@@ -280,34 +270,15 @@ void correlatedRelease(double epsilon, double delta, double M,
     loop_ub = old_locations_size[1];
     for (xpageoffset = 0; xpageoffset < 27; xpageoffset++) {
       for (hi = 0; hi < 27; hi++) {
-        // if (old_locations_size[1] == 3) {
-        //   for (i = 0; i < loop_ub; i++) {
-        //     res_part[i] =
-        //         old_locations_data[xpageoffset + old_locations_size[0] * i] -
-        //         Locations_orig[hi + 27 * i];
-        //   }
-        // } else {
-        //   b_binary_expand_op(res_part, old_locations_data, old_locations_size,
-        //                      xpageoffset, Locations_orig, hi);
-        // }
         for (int cnt = 0; cnt < 3; cnt++) {
           res_part[cnt] = old_locations_data[xpageoffset + 27*cnt] - Locations_orig[hi + 27*cnt];
         }
-        // if ((fabs(res_part[0]) + fabs(res_part[1])) + fabs(res_part[2]) <=
-        //     1.0E-6) {
         if ((fabs(res_part[0]) + fabs(res_part[1])) + fabs(res_part[2]) <=
             0.00000095367431640624) {
           p_pos_res_data[hi] = p_pos[xpageoffset];
         }
-        // Check for iteration 103, should be removed later TODO
-        // if (((fabs(res_part[0]) + fabs(res_part[1])) + fabs(res_part[2]) <=
-        //     0.00000095367431640625) && *rand_num_generated == 45389) {
-        //   // printf("Trigger at: %i, %i\n", xpageoffset, hi);
-        //   p_pos_res_data[hi] = p_pos[xpageoffset];
-        // }
       }
     }
-    /* p_pos = p_pos;%./sum(p_pos); */
     xpageoffset = p_pos_res->size[0] - 1;
     hi = p_pos_res->size[0];
     i = p_prior->size[0];
@@ -329,7 +300,6 @@ void correlatedRelease(double epsilon, double delta, double M,
   sumP = maximum(&Locations_orig[54]) - minimum(&Locations_orig[54]);
   scaling_fac_x =
       sumP / (maximum(&Locations_orig[0]) - minimum(&Locations_orig[0]));
-  /* scaling_fac_x = 0.1; */
   x[0] *= scaling_fac_x;
   /*  difference in value scaling long and alt */
   scaling_fac_y =
@@ -341,9 +311,7 @@ void correlatedRelease(double epsilon, double delta, double M,
   }
   x[1] *= scaling_fac_x;
   /*  construct delta location set */
-  /*  delta-location set = minimum set such that the sum of probabilities \geq
-   */
-  /*  1-delta */
+  /*  delta-location set = minimum set such that the sum of probabilities > 1-delta
   /*  sort probability elements in descending order */
   emxInit_real_T(&idx, 1);
   i = idx->size[0];
@@ -377,7 +345,7 @@ void correlatedRelease(double epsilon, double delta, double M,
     if (sumP < 1.0 - delta) {
       /*  if the condition has been reached */
       selected_data[xpageoffset] = 1;
-      /*  mark this sector as selcted */
+      /*  mark this sector as selected */
       xpageoffset++;
     } else {
       exitg1 = true;
@@ -432,8 +400,7 @@ void correlatedRelease(double epsilon, double delta, double M,
   if (iidx->size[0] == 0) {
     double b_x[81];
     double y[81];
-    /*  if it does not */
-    /* create a surrogate */
+    /* If the true location is not in Delta_X  create a surrogate */
     for (i = 0; i < 3; i++) {
       for (i1 = 0; i1 < 27; i1++) {
         xpageoffset = i1 + 27 * i;
@@ -500,7 +467,6 @@ void correlatedRelease(double epsilon, double delta, double M,
     xpageoffset = 0;
   }
   for (b_i = 0; b_i < xpageoffset; b_i++) {
-    /* for j = [1:i-1,i+1:length(K_prime)] */
     for (lastBlockLength = 0; lastBlockLength < xpageoffset;
          lastBlockLength++) {
       if ((unsigned int)lastBlockLength != (unsigned int)b_i) {
@@ -557,9 +523,6 @@ void correlatedRelease(double epsilon, double delta, double M,
   }
 
   emxFree_real_T(&Delta_v);
-  /*  select a value ell and increase it if T is not stable */
-  /* take y values uniformly at random from K */
-  /* y_index = unidrnd(size(K,1),1,ell);% TODO */
   loop_ub_tmp = K_prime->size[0] * 3;
   i = idx->size[0];
   idx->size[0] = loop_ub_tmp;
@@ -632,7 +595,6 @@ void correlatedRelease(double epsilon, double delta, double M,
   for (i = 0; i < loop_ub_tmp; i++) {
     h_idx_data[i] = idx_data[i + b_idx->size[0] * 2];
   }
-  // *rand_num_generated = *rand_num_generated + 3;
   sumP = b_rand();
   b_r = b_rand();
   T_re_tmp = b_rand();
@@ -640,10 +602,7 @@ void correlatedRelease(double epsilon, double delta, double M,
   res_part[1] = c_minimum(e_idx) + (b_maximum(f_idx) - c_minimum(g_idx)) * b_r;
   res_part[2] =
       c_minimum(h_idx) + (b_maximum(i_idx) - c_minimum(j_idx)) * T_re_tmp;
-      
-  /*  compute T */
-  /* disp(T) */
-  /* disp(size(T)) */
+
   for (i = 0; i < 3; i++) {
     b_res_part[3 * i].re = res_part[0] * res_part[i];
     b_res_part[3 * i].im = 0.0;
@@ -655,15 +614,7 @@ void correlatedRelease(double epsilon, double delta, double M,
     b_res_part[i1].im = 0.0;
   }
 
-  // This line should result in T = T^(-1/2)
-  // It looks like T has no impact in the eventual results, so let's ignore this for now
   mpower(b_res_part, T);
-
-  /* disp(T) */
-  /* disp(size(T)) */
-  /* disp("------------") */
-  /*  check stability of T */
-  /* nVals = zeros(3*size(K,1),1); */
   emxInit_real_T(&new_y_vals, 2);
   i = new_y_vals->size[0] * new_y_vals->size[1];
   new_y_vals->size[0] = 3;
@@ -678,14 +629,10 @@ void correlatedRelease(double epsilon, double delta, double M,
   new_y_vals_data[0] = res_part[0];
   new_y_vals_data[1] = res_part[1];
   new_y_vals_data[2] = res_part[2];
-  /* disp(new_y_vals); */
   sumP = 3.0 * (double)(K_prime->size[0] * 3);
   xpageoffset = 0;
   exitg1 = false;
-  int iterations = 0;
   while ((!exitg1) && (xpageoffset <= (int)(sumP - 1.0) - 1)) {
-    iterations++;
-    /* y_index = unidrnd(size(K,1),1,ell); */
     i = idx->size[0];
     idx->size[0] = loop_ub_tmp;
     emxEnsureCapacity_real_T(idx, i);
@@ -736,11 +683,9 @@ void correlatedRelease(double epsilon, double delta, double M,
       g_idx_data[i] = b_r;
       h_idx_data[i] = b_r;
     }
-    // *rand_num_generated = *rand_num_generated + 3;
     b_r = b_rand();
     T_re_tmp = b_rand();
     e_T_re_tmp = b_rand();
-    // printf("Random values 773: %f, %f, %f\n", b_r, T_re_tmp, e_T_re_tmp);
     i = 3 * (xpageoffset + 1);
     new_y_vals_data[i] =
         c_minimum(idx) + (b_maximum(c_idx) - c_minimum(d_idx)) * b_r;
@@ -748,15 +693,6 @@ void correlatedRelease(double epsilon, double delta, double M,
         c_minimum(e_idx) + (b_maximum(f_idx) - c_minimum(g_idx)) * T_re_tmp;
     new_y_vals_data[i + 2] =
         c_minimum(h_idx) + (b_maximum(i_idx) - c_minimum(j_idx)) * e_T_re_tmp;
-    /* old_y_vals = y_vals; */
-    /* y_vals = zeros(3,size(old_y_vals,2)+1); */
-    /* for i = 1:size(old_y_vals,1) */
-    /*     for j = 1:size(old_y_vals,2) */
-    /*         y_vals(i,j) = old_y_vals(i,j); */
-    /*     end */
-    /* end */
-    /* y_vals(:,size(y_vals,2)) = newToCon; */
-    /* y_vals = [y_vals,newToCon]; */
     memset(&T_new[0], 0, 9U * sizeof(double));
     /*  compute T */
     i = xpageoffset + 1;
@@ -786,7 +722,6 @@ void correlatedRelease(double epsilon, double delta, double M,
     if (b_norm(b_res_part) <= 0.01) {
       exitg1 = true;
     } else {
-      /* nVals(ell,1) = norm(T-T_new,2); */
       memcpy(&T[0], &b_T_new[0], 9U * sizeof(creal_T));
       xpageoffset++;
     }
@@ -855,21 +790,11 @@ void correlatedRelease(double epsilon, double delta, double M,
 
   emxFree_creal_T(&k_idx);
   /*  uniformly sample a value from K_I */
-  /*  TODO */
-  // *rand_num_generated = *rand_num_generated + 3;
   sumP = b_rand();
   T_re_tmp = b_rand();
   e_T_re_tmp = b_rand();
-  /* z = [min(K_I(1,:)) + (max(K_I(1,:))+min(K_I(1,:)))*0.5;... */
-  /*     min(K_I(2,:)) + (max(K_I(2,:))+min(K_I(2,:)))*0.5;... */
-  /*     min(K_I(3,:)) + (max(K_I(3,:))+min(K_I(3,:)))*0.5]; */
   /*  draw a value from a Gamma distribution */
   b_r = gamrnd(1.0 / epsilon);
-  /* r = gamrnd(3,5); */
-  /*  TODO */
-  /* r = 13.6289; */
-  /*  adjust z */
-  /* z = r.*z; */
   /*  release z according to */
   emxInit_creal_T(&c_x);
   i = c_x->size[0] * c_x->size[1];
@@ -995,10 +920,6 @@ void correlatedRelease(double epsilon, double delta, double M,
     f_K_I_data[i] = K_I_data[i1];
   }
   creal_T dc;
-  // d_minimum does not take the minimum value, it takes the smallest absolute...
-  // Code below has all the d_minimum changed to real_min
-  // The same problem with d_minimum was also there when computing the maximum
-  // Also added the max functions here because they also did not get computed correctly
   d_x = real_min(c_x);
   emxFree_creal_T(&c_x);
   ex = real_max(b_K_I);
@@ -1142,9 +1063,6 @@ void correlatedRelease(double epsilon, double delta, double M,
       fflush(stdout);
       printf("%s\n", "Restart the script, this should no longer continue");
       fflush(stdout);
-      /* ME = MException('MyComponent:noSuchVariable', ... */
-      /*     'Zero probability',str); */
-      /* throw(ME) */
     }
   }
   /*  update p_pos */
