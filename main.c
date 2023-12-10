@@ -143,7 +143,7 @@ void encrypt_loc(cipher *cipher_out, pke_W USS, location uav_loc, pke_S USS_S) {
   sprintf(m, "%f;%f;%f", uav_loc.longitude.a, uav_loc.latitude.a, uav_loc.altitude.a);
   octet M = {30, sizeof(m), m};
   // Length of the HMAC tag
-  int len = 12;
+  int len = 32;
   // Component of the output ciphertext
   cipher_out->V.len = 0;
   cipher_out->V.max = sizeof(cipher_out->v);

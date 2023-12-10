@@ -68,9 +68,9 @@ typedef struct {
 typedef struct {
   char v[2 * EFS_NIST521 + 1];
   octet V;
-  char c[6 * EFS_NIST521 + 1];
+  char c[32 + 1];
   octet C;
-  char t[32];
+  char t[32 + 1];
   octet T;
 } cipher;
 
