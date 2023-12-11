@@ -1,5 +1,5 @@
 
-# Obfuscated Location Disclosure for Remote ID-enabled UAVs (OLDRIDUAV)
+# Obfuscated Location Disclosure for Remote ID-enabled UAVs (OLD-RID)
 This is a proof-of-concept for Obfuscated Location Disclosure for Remote ID-enabled UAVs, using a modified Planar Isotropic Mechanism (PIM) from Xiao et al. [\[1\]](https://doi.org/10.1145/2810103.2813640). This code was tested on a Raspberry PI 3 Model B+ (Raspbian OS) and a Personal Computer (VM with a Linux OS). From a flight path, in csv format with headers (latitude, longitude, altitude), it will obfuscate each location and encrypt the UAV's actual location. All of the componenents needed for a Remote ID message are stored in the `message` variable in `main.c`.  
 
 ## Installation steps
