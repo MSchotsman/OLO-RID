@@ -2,6 +2,13 @@
 # Obfuscated Location Disclosure for Remote ID-enabled UAVs (OLD-RID)
 This is a proof-of-concept for Obfuscated Location Disclosure for Remote ID-enabled UAVs, using a modified Planar Isotropic Mechanism (PIM) from Xiao et al. [\[1\]](https://doi.org/10.1145/2810103.2813640). This code was tested on a Raspberry PI 3 Model B+ (Raspbian OS) and a Personal Computer (VM with a Linux OS). From a flight path, in csv format with headers (latitude, longitude, altitude), it will obfuscate each location and encrypt the UAV's actual location. All of the components needed for a Remote ID message are stored in the `message` variable in `main.c`.  
 
+<figure>
+  <img
+  src="obfuscated.png"
+  alt="obfuscated">
+  <figcaption>Flight path with an average (obfuscation) distance of 100 meters and maximum transmit range of 1000 meters.</figcaption>
+</figure>
+
 ## Installation steps
 Download MiraclCore from [https://github.com/miracl/core/tree/master/c](https://github.com/miracl/core/tree/master/c) and place it in `./include/MiraclCore/`.
 Go to .`/include/MiraclCore/`, depending on a 32-bit or 64-bit system run `python3 config32.py` or `python3 config64.py`, respectively. To use the same curves as in the report, select curves 3, 8, 10, 28, and 38. Once the curves have been selected press 0 to complete the process.  
