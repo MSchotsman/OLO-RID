@@ -1157,6 +1157,15 @@ void correlatedRelease(double epsilon, double delta, double M,
     }
     p_pos_res_data[b_i] = p_z_u[b_i] * p_prior_data[b_i] / j_T_re_tmp;
   }
+
+  // Randomize the angles
+  double radius = sqrt(pow(z[0].re - x[0], 2) + pow(z[1].re - x[1], 2));
+  double theta = 2 * 3.14159265358979323846 * b_rand();
+  double flip = b_rand() > 0.5 ? 1.0 : -1.0;
+  z[0].re = radius*cos(theta) + x[0];
+  z[1].re = radius*sin(theta) + x[1];
+  z[2].re = flip*fabs(z[2].re - x[2]) + x[2];
+
   emxFree_real_T(&idx);
   emxFree_real_T(&p_prior);
   if (z[0].im == 0.0) {
