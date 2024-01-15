@@ -1,6 +1,6 @@
 
-# Obfuscated Location Disclosure for Remote ID-enabled UAVs (OLD-RID)
-This is a proof-of-concept for Obfuscated Location Disclosure for Remote ID-enabled UAVs, using a modified Planar Isotropic Mechanism (PIM) from Xiao et al. [\[1\]](https://doi.org/10.1145/2810103.2813640). This code was tested on a Raspberry PI 3 Model B+ (Raspbian OS) and a Personal Computer (VM with a Linux OS). From a flight path, in csv format with headers (latitude, longitude, altitude), it will obfuscate each location and encrypt the UAV's actual location. All of the components needed for a Remote ID message are stored in the `message` variable in `main.c`.  
+# Obfuscated Location disclOsure for RID-enabled drones (OLO-RID)
+This is a proof-of-concept for Obfuscated Location disclOsure for RID-enabled drones, using a modified Planar Isotropic Mechanism (PIM) from Xiao et al. [\[1\]](https://doi.org/10.1145/2810103.2813640). This code was tested on a Raspberry PI 3 Model B+ (Raspbian OS) and a Personal Computer (VM with a Linux OS). From a flight path, in csv format with headers (latitude, longitude, altitude), it will obfuscate each location and encrypt the drone's actual location. All of the components needed for a Remote ID message are stored in the `message` variable in `main.c`.  
 
 Flight path with an average (obfuscation) distance of 100 meters and maximum transmit range of 1000 meters.
 ![Flight path with an average (obfuscation) distance of 100 meters and maximum transmit range of 1000 meters.](https://github.com/MSchotsman/OLD-RID/blob/main/obfuscated.png?raw=true "Flight path with an average (obfuscation) distance of 100 meters and maximum transmit range of 1000 meters.")
@@ -47,7 +47,7 @@ Run `main.exe`
 
 ### Future Work
 
-This proof-of-concept was created to obfuscate locations in a location trace. Tested on a Raspberry PI 3 Model B+ and a Personal Computer. To implement it on a UAV changes in the `main.c` are required, of which a few are named here: connection to a GNSS (for the UAV location and velocity, and Control Station location), emergency status indicator, and connection to the Wi-Fi transmitter to send a package.
+This proof-of-concept was created to obfuscate locations in a location trace. Tested on a Raspberry PI 3 Model B+ and a Personal Computer. To implement it on a drone changes in the `main.c` are required, of which a few are named here: connection to a GNSS (for the drone location and velocity, and Control Station location), emergency status indicator, and connection to the Wi-Fi transmitter to send a package.
 
 ### Disclaimer:
 
